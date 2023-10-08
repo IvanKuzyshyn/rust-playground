@@ -20,13 +20,13 @@ impl Display for Method {
 }
 
 #[derive(Debug)]
-struct Request<'a, 'b> {
+struct Request {
     method: Method,
-    host: &'a str,
-    url: &'b str,
+    host: &'static str,
+    url: &'static str,
 }
 
-impl<'a, 'b> Display for Request<'a, 'b> {
+impl Display for Request {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         writeln!(f, "{} request to {}{}", self.method, self.url, self.host)
     }
