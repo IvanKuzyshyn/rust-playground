@@ -2,19 +2,23 @@ use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug)]
 enum Method {
+    DELETE,
     GET,
+    OPTIONS,
+    PATCH,
     POST,
     PUT,
-    PATCH,
 }
 
 impl Display for Method {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
+            Method::DELETE => write!(f, "DELETE"),
             Method::GET => write!(f, "GET"),
+            Method::OPTIONS => write!(f, "OPTIONS"),
+            Method::PATCH => write!(f, "PATCH"),
             Method::POST => write!(f, "POST"),
             Method::PUT => write!(f, "PUT"),
-            Method::PATCH => write!(f, "PATCH"),
         }
     }
 }
