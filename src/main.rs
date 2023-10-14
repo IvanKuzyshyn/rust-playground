@@ -1,4 +1,5 @@
 mod formatter;
+mod list;
 
 use std::env;
 
@@ -15,6 +16,7 @@ fn main() {
 
     match module_name.as_str() {
         "formatter" => formatter::run(),
+        "list" => list::run(),
         _ => eprintln!(
             "Unknown module {}. Make sure it matches module in src folder.",
             module_name
