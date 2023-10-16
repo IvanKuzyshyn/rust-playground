@@ -1,5 +1,6 @@
 mod formatter;
 mod list;
+mod serializer;
 
 use std::env;
 
@@ -17,6 +18,7 @@ fn main() {
     match module_name.as_str() {
         "formatter" => formatter::run(),
         "list" => list::run(),
+        "serializer" => serializer::countries_serializer::run(),
         _ => eprintln!(
             "Unknown module {}. Make sure it matches module in src folder.",
             module_name
