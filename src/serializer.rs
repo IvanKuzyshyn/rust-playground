@@ -1,10 +1,9 @@
 pub mod countries_serializer {
-    use clap::error::ErrorKind;
     use serde::Deserialize;
     use serde_json;
     use std::collections::HashMap;
     use std::error::Error as StandardError;
-    use std::fmt::{Display, Formatter, Result};
+    use std::fmt::{Display, Formatter, Result as FormatterResult};
     use std::fs::File;
     use std::io;
     use std::io::{Error, Read};
@@ -18,11 +17,12 @@ pub mod countries_serializer {
         official: String,
     }
 
+    #[allow(non_camel_case_types)]
     #[derive(Deserialize, Debug, Clone)]
     pub struct CountryName {
         common: String,
         official: String,
-        native: HashMap<String, CountryNativeName>,
+        nativeName: HashMap<String, CountryNativeName>,
     }
 
     #[derive(Deserialize, Debug, Clone)]
@@ -47,7 +47,7 @@ pub mod countries_serializer {
     impl StandardError for CustomError {}
 
     impl Display for CustomError {
-        fn fmt(&self, f: &mut Formatter) -> Result {
+        fn fmt(&self, f: &mut Formatter) -> FormatterResult {
             match *self {
                 CustomError::NotFound(ref name) => {
                     write!(f, "Country with name {} not found!", name)
@@ -61,7 +61,7 @@ pub mod countries_serializer {
             CountryList { list: Vec::new() }
         }
         pub fn read_from_file(&mut self, file_path: &str) -> Result<(), Error> {
-            let list_as_string_result = read_file_as_string(file_path);
+            let list_as_string_result = Self::read_file_as_string(file_path);
 
             if list_as_string_result.is_err() {
                 return Err(list_as_string_result.unwrap_err());
@@ -87,11 +87,10 @@ pub mod countries_serializer {
                 .iter()
                 .find(|country| country.name.common.eq(name));
 
-            if found_country.is_none() {
-                return Err(ErrorKind::as_str(CustomError::NotFound(name.to_string()));
+            match found_country {
+                Some(country) => Ok(country.clone()),
+                None => Err(CustomError::NotFound(name.to_string())),
             }
-
-            Ok(())
         }
 
         fn serialize_json(raw_json: &str) -> Vec<Country> {
@@ -100,28 +99,29 @@ pub mod countries_serializer {
 
             items
         }
-    }
 
-    pub fn run() {
-        println!("Reading file {}", COUNTRIES_JSON);
-        let result = self::read_file_as_string();
+        fn read_file_as_string(path: &str) -> Result<String, io::Error> {
+            let mut file = File::open(path)?;
+            let mut result = String::new();
 
-        match result {
-            Ok(content) => {
-                self::serialize_json(content.to_string());
-                println!("File content {}", content)
-            }
-            Err(err) => println!("Error when reading file {}", err),
+            file.read_to_string(&mut result)?;
+
+            Ok(result)
         }
     }
 
-    fn read_file_as_string(path: &str) -> Result<String, io::Error> {
-        let mut file = File::open(path)?;
-        let mut result = String::new();
+    pub fn run() {
+        let file_path = "./assets/countries.json";
+        println!("Reading file {}", file_path);
+        let mut list = CountryList::new();
+        list.read_from_file(file_path).unwrap();
+        let found_country = list.find_country_by_name("Ukraine").unwrap();
 
-        file.read_to_string(&mut result)?;
-
-        Ok(result)
+        // println!("All loaded countries count: {}", list.get_list().len());
+        println!(
+            "Found country {} in region {}",
+            found_country.name.common, found_country.region
+        );
     }
 
     fn serialize_json(raw_json: &str) -> Vec<Country> {
